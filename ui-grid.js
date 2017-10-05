@@ -6264,7 +6264,33 @@ angular.module('ui.grid')
 
     this.columns.forEach(function(column) {
       column.filters.forEach(function(filter) {
-        filter.term = undefined;
+
+        if(filter.term) {
+          if(typeof filter.term == 'object') {
+            for(var key in filter.term) {
+
+              /* Special cases for ui slider being a filter inputg */
+              if(key == 'min') {
+                filter.term[key] = 0;
+              }
+
+              else if(key == 'max') {
+                filter.term[key] = 999;
+              }
+
+              else if(typeof filter.term[key] == 'number') {
+                filter.term[key] = 0;
+              }
+
+              else {
+                filter.term[key] = undefined;
+              }
+            }
+          }
+          else {
+            filter.term = undefined;
+          }
+        }
 
         if (clearConditions) {
           filter.condition = undefined;
