@@ -6282,7 +6282,7 @@ angular.module('ui.grid')
                * */
 
               /* Do not change default values when reset filters */
-              if(key.endsWith('DefaultAfterClearFilter')) {
+              if(_.endsWith(key, 'DefaultAfterClearFilter')) { /* Lodash required at this moment! TODO: Solve when using for projects without lodash */
                 continue;
               }
 
