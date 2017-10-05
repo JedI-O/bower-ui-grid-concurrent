@@ -1409,7 +1409,7 @@ function ($timeout, gridUtil, uiGridConstants, uiGridColumnMenuService, $documen
                         uiGridCtrl.grid.api.core.notifyDataChange( uiGridConstants.dataChange.COLUMN );
                         uiGridCtrl.grid.queueGridRefresh();
                       }
-                    }));
+                    }, true));
                   });
                   $scope.$on('$destroy', function() {
                     filterDeregisters.forEach( function(filterDeregister) {
