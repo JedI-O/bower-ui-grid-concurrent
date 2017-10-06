@@ -4163,6 +4163,17 @@ angular.module('ui.grid')
 
     /**
      * @ngdoc method
+     * @name clearFiltersOfOneColumn
+     * @methodOf ui.grid.core.api:PublicApi
+     * @description Clears all filters of one given column, by chsc (ngdevoops team)
+     * @param {object} column One column object
+     * @param {object} clearConditions Defaults to false.
+     * @param {object} clearFlags Defaults to false.
+     */
+    self.api.registerMethod('core', 'clearFiltersOfOneColumn', this.clearFiltersOfOneColumn);
+
+    /**
+     * @ngdoc method
      * @name clearAllFilters
      * @methodOf ui.grid.core.api:PublicApi
      * @description Clears all filters and optionally refreshes the visible rows.
@@ -6242,6 +6253,71 @@ angular.module('ui.grid')
 
   /**
    * @ngdoc function
+   * @name clearFiltersOfOneColumn
+   * @methodOf ui.grid.class:Grid
+   * @description Clears all filters of one given column, by chsc (ngdevoops team)
+   * @param {object} column One column object.
+   * @param {object} clearConditions Defaults to false.
+   * @param {object} clearFlags Defaults to false.
+   */
+  Grid.prototype.clearFiltersOfOneColumn = function clearFiltersOfOneColumn(column, clearConditions, clearFlags) {
+
+    if (clearConditions === undefined) {
+      clearConditions = false;
+    }
+    if (clearFlags === undefined) {
+      clearFlags = false;
+    }
+
+    column.filters.forEach(function(filter) {
+
+      if(filter.term) {
+        if(typeof filter.term == 'object') {
+          for(var key in filter.term) {
+            /* For objects, a default value is settable like for example a slider as a filter
+             * filter: {
+             sliderOptions: { ...
+             },
+             term: {
+             min: 0,
+             max: 999,
+             minDefaultAfterClearFilter: 0,
+             maxDefaultAfterClearFilter: 999
+             },
+             *
+             * */
+
+            /* Do not change default values when reset filters */
+            if(_.endsWith(key, 'DefaultAfterClearFilter')) { /* Lodash required at this moment! TODO: Solve when using for projects without lodash */
+              continue;
+            }
+
+            /* Check if there is a default setting for current property: If yes, set its value instead of deleting value */
+            if(filter.term.hasOwnProperty(key + 'DefaultAfterClearFilter')) {
+              filter.term[key] = filter.term[key + 'DefaultAfterClearFilter'];
+            }
+            else {
+              filter.term[key] = undefined;
+            }
+          }
+        }
+        else {
+          filter.term = undefined;
+        }
+      }
+
+      if (clearConditions) {
+        filter.condition = undefined;
+      }
+
+      if (clearFlags) {
+        filter.flags = undefined;
+      }
+    });
+  };
+
+  /**
+   * @ngdoc function
    * @name clearAllFilters
    * @methodOf ui.grid.class:Grid
    * @description Clears all filters and optionally refreshes the visible rows.
@@ -6263,51 +6339,7 @@ angular.module('ui.grid')
     }
 
     this.columns.forEach(function(column) {
-      column.filters.forEach(function(filter) {
-
-        if(filter.term) {
-          if(typeof filter.term == 'object') {
-            for(var key in filter.term) {
-              /* For objects, a default value is settable like for example a slider as a filter
-               * filter: {
-               sliderOptions: { ...
-               },
-               term: {
-               min: 0,
-               max: 999,
-               minDefaultAfterClearFilter: 0,
-               maxDefaultAfterClearFilter: 999
-               },
-               *
-               * */
-
-              /* Do not change default values when reset filters */
-              if(_.endsWith(key, 'DefaultAfterClearFilter')) { /* Lodash required at this moment! TODO: Solve when using for projects without lodash */
-                continue;
-              }
-
-              /* Check if there is a default setting for current property: If yes, set its value instead of deleting value */
-              if(filter.term.hasOwnProperty(key + 'DefaultAfterClearFilter')) {
-                filter.term[key] = filter.term[key + 'DefaultAfterClearFilter'];
-              }
-              else {
-                filter.term[key] = undefined;
-              }
-            }
-          }
-          else {
-            filter.term = undefined;
-          }
-        }
-
-        if (clearConditions) {
-          filter.condition = undefined;
-        }
-
-        if (clearFlags) {
-          filter.flags = undefined;
-        }
-      });
+      Grid.prototype.clearFiltersOfOneColumn (column, clearConditions, clearFlags);
     });
 
     if (refreshRows) {
